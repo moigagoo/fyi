@@ -40,7 +40,7 @@ router slack:
               "name": "rate",
               "text": "👍",
               "type": "button",
-              "value": &"{match[0]}:1"
+              "value": &"{match[0]} 1"
             },
             {
               "name": "rate",
@@ -61,14 +61,14 @@ router slack:
   post "/actions":
     let
       payload = parseJson @"payload"
-      action = getStr payload["actions"][0]
-      (entryId, diff) = (parseInt action.split()[0], parseInt action.split()[1])
+      action = payload["actions"][0]["value"].getStr().split()
+      (entryId, diff) = (parseInt action[0], parseInt action[1])
 
     withDbConn dbConn:
       discard dbConn.rate(entryId, diff)
 
     resp %*{
-      "text": @"payload",
+      "text": "🙏",
       "replace_original": false
     }
 
