@@ -12,7 +12,14 @@ router slack:
     withDbConn dbConn:
       success = dbConn.addEntry(@"text", @"user_id")
 
-    resp if success: "✔" else: "❌"
+    if success:
+      resp %*{
+        "response_type": "in_channel",
+        "text": "✔"
+      }
+
+    else:
+      resp "❌"
 
   post "/how":
     var matches: seq[Row]
