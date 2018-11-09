@@ -29,7 +29,7 @@ router slack:
       var attachments = newJArray()
 
       for match in matches:
-        let text = &"{match[0]},\n\n_добавлено {match[1]} в канале {match[2]} {match[3]}_"
+        let text = &"{match[0]},\n\n_добавлено {match[1]}\nв канале {match[2]}\n{match[3]}_"
 
         attachments.add %*{"text": text}
 
