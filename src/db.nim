@@ -16,11 +16,11 @@ proc initDb*(dbConn: DbConn) =
     )
     """
 
-proc addEntry*(dbConn: DbConn, body, authorId, channelId: string): bool =
+proc addEntry*(dbConn: DbConn, body, authorId: string): bool =
   try:
     discard dbConn.insertID(
-      sql"INSERT INTO entries (body, author_id, channel_id) VALUES (?, ?, ?)",
-      body, authorId, channelId
+      sql"INSERT INTO entries (body, author_id) VALUES (?, ?, ?)",
+      body, authorId
     )
     result = true
 
