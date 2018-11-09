@@ -12,7 +12,8 @@ proc initDb*(dbConn: DbConn) =
       body text NOT NULL CHECK (body <> ''),
       author_id varchar(20) NOT NULL CHECK (author_id <> ''),
       channel_id varchar(20) NOT NULL CHECK (channel_id <> ''),
-      created_at timestamp DEFAULT CURRENT_TIMESTAMP
+      created_at timestamp DEFAULT CURRENT_TIMESTAMP,
+      rating INT DEFAULT 0
     )
     """
 
@@ -22,7 +23,14 @@ proc addEntry*(dbConn: DbConn, body, authorId, channelId: string): bool =
       sql"INSERT INTO entries (body, author_id, channel_id) VALUES (?, ?, ?)",
       body, authorId, channelId
     )
+    result = true
 
+  except DbError:
+    discard
+
+proc rate*(dbConn: DbConn, entryId, diff: int): bool =
+  try:
+    dbConn.exec sql"UPDATE entries SET rating = rating + ? WHERE id = ?", diff, entryId
     result = true
 
   except DbError:
@@ -31,11 +39,11 @@ proc addEntry*(dbConn: DbConn, body, authorId, channelId: string): bool =
 proc findMatches*(dbConn: DbConn, query: string, limit = 3, tsConfig = "russian"): seq[Row] =
   dbConn.getAllRows(
     sql"""
-      SELECT body, author_id, channel_id, created_at
+      SELECT *
       FROM entries
       WHERE tsvector_to_array(to_tsvector(?, body))
         && tsvector_to_array(to_tsvector(?, ?))
-      ORDER BY created_at DESC
+      ORDER BY rating DESC, created_at DESC
       LIMIT ?
       """,
       tsConfig, tsConfig, query, limit

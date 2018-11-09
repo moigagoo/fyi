@@ -1,4 +1,5 @@
-import db_postgres, json, strformat
+import db_postgres, json, strformat, strutils
+
 import jester
 
 import db
@@ -29,15 +30,47 @@ router slack:
       var attachments = newJArray()
 
       for match in matches:
-        let text = &"{match[0]},\n\n_добавлено {match[1]}\nв канале {match[2]}\n{match[3]}_"
-
-        attachments.add %*{"text": text}
+        attachments.add %*{
+          "text": [
+              &"{match[1]}",
+              &"_Добавлено {match[2]} в канале {match[3]} {match[4]}_"
+            ].join("\n\n"),
+          "actions": [
+            {
+              "name": "rate",
+              "text": "👍",
+              "type": "button",
+              "value": &"{match[0]}:1"
+            },
+            {
+              "name": "rate",
+              "text": "👎",
+              "type": "button",
+              "value": &"{match[0]} -1"
+            }
+          ],
+          "callback_id": "rate"
+        }
 
       resp %*{
         "response_type": "in_channel",
         "text": "Вот что нашлось по вашему запросу:",
         "attachments": attachments
       }
+
+  post "/actions":
+    let
+      payload = parseJson @"payload"
+      action = getStr payload["actions"][0]
+      (entryId, diff) = (parseInt action.split()[0], parseInt action.split()[1])
+
+    withDbConn dbConn:
+      discard dbConn.rate(entryId, diff)
+
+    resp %*{
+      "text": @"payload",
+      "replace_original": false
+    }
 
 
 routes:
