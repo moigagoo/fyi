@@ -11,7 +11,6 @@ proc initDb*(dbConn: DbConn) =
       id SERIAL PRIMARY KEY,
       body text NOT NULL CHECK (body <> ''),
       author_id varchar(20) NOT NULL CHECK (author_id <> ''),
-      channel_id varchar(20) NOT NULL CHECK (channel_id <> ''),
       created_at timestamp DEFAULT CURRENT_TIMESTAMP,
       rating INT DEFAULT 0
     )
