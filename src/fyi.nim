@@ -33,7 +33,7 @@ router slack:
         attachments.add %*{
           "text": [
               &"{match[1]}",
-              &"_Добавлено {match[2]} в канале {match[3]} {match[4]}_"
+              &"_Добавлено <@{match[2]}> {match[4]}_"
             ].join("\n\n"),
           "actions": [
             {
