@@ -18,7 +18,12 @@ router slack:
     var success: bool
 
     withDbConn dbConn:
-      success = dbConn.addEntry(@"text", @"user_id")
+      let
+        body = parseJson(request.body)
+        text = body["text"].getStr()
+        userId = body["user_id"].getStr()
+
+      success = dbConn.addEntry(text, userId)
 
     if success:
       resp %*{
@@ -33,7 +38,8 @@ router slack:
     var matches: seq[Row]
 
     withDbConn dbConn:
-      matches = dbConn.findMatches @"text"
+      let query = parseJson(request.body)["text"].getStr()
+      matches = dbConn.findMatches(query)
 
     if len(matches) == 0:
       resp %*{
@@ -73,7 +79,7 @@ router slack:
 
   post "/actions":
     let
-      payload = parseJson @"payload"
+      payload = parseJson(request.body)["payload"]
       action = payload["actions"][0]["value"].getStr().split()
       (entryId, diff) = (parseInt action[0], parseInt action[1])
 
