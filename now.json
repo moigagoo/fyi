@@ -8,6 +8,7 @@
     "PG_HOST": "@pg_host",
     "PG_USER": "@pg_user",
     "PG_PASSWORD": "@pg_password",
-    "PG_DB": "@pg_db"
+    "PG_DB": "@pg_db",
+    "LANG": "ru"
   }
 }

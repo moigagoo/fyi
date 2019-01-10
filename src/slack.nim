@@ -5,6 +5,14 @@ import jester
 import db
 
 
+const lang {.strdefine.}: string = "en"
+
+when lang == "ru":
+  import localizations/ru
+else:
+  import localizations/en
+
+
 router slack:
   post "/fyi":
     var success: bool
@@ -28,7 +36,10 @@ router slack:
       matches = dbConn.findMatches @"text"
 
     if len(matches) == 0:
-      resp "Ничего не нашлось 😿"
+      resp %*{
+        "response_type": "in_channel",
+        "text": nothingFound()
+      }
 
     else:
       var attachments = newJArray()
