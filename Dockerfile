@@ -6,5 +6,7 @@ ENV LANG=ru
 RUN nimble build -d:release -d:lang=$LANG -y
 
 FROM postgres:alpine
-COPY --from=base /usr/app/fyi /bin/fyi
-CMD ["/bin/fyi"]
+RUN mkdir -p /usr/app
+WORKDIR /usr/app
+COPY --from=base /usr/app /usr/app
+CMD ["/usr/app/fyi"]
