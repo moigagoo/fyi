@@ -28,10 +28,19 @@ router api:
       withDbConn dbConn:
         let entry = dbConn.getEntry(id)
 
-        resp %*{
-          "id": entry[0],
-          "body": entry[1],
-          "authorId": entry[2],
-          "createdAt": entry[3],
-          "rating": entry[4]
-        }
+        if entry[0] == "": resp Http404
+        else:
+          resp %*{
+            "id": entry[0],
+            "body": entry[1],
+            "authorId": entry[2],
+            "createdAt": entry[3],
+            "rating": entry[4]
+          }
+
+  delete "/entries/@id":
+    let id = parseInt(@"id")
+
+    withDbConn dbConn:
+      dbConn.deleteEntry(id)
+      resp Http200
