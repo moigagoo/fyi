@@ -10,3 +10,4 @@ RUN mkdir -p /usr/app
 WORKDIR /usr/app
 COPY --from=base /usr/app /usr/app
 CMD ["/usr/app/fyi"]
+EXPOSE 5000
