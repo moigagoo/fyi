@@ -48,6 +48,8 @@ proc findMatches*(dbConn: DbConn, query: string, limit = 3, tsConfig = "russian"
       tsConfig, tsConfig, query, limit
   )
 
+proc getEntries*(dbConn: DbConn): seq[Row] = dbConn.getAllRows(sql"SELECT * FROM entries")
+
 template withDbConn*(varName, body: untyped): untyped =
   let
     host = getEnv("PG_HOST")

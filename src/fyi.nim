@@ -16,3 +16,4 @@ else:
 
 routes:
   extend slack, "/slack"
+  extend api, "/api"
