@@ -44,3 +44,14 @@ router api:
     withDbConn dbConn:
       dbConn.deleteEntry(id)
       resp Http200
+
+  post "/entries/?":
+    withDbConn dbConn:
+      let
+        body = parseJson(request.body)
+        text = body["text"].getStr()
+        userId = body{"user_id"}.getStr("fyi")
+
+      resp %*{
+        "id": dbConn.createEntry(text, userId)
+      }

@@ -56,6 +56,16 @@ proc getEntry*(dbConn: DbConn, id: int): Row =
 proc deleteEntry*(dbConn: DbConn, id: int) =
   dbConn.exec(sql"DELETE FROM entries WHERE id=?", $id)
 
+proc createEntry*(dbConn: DbConn, body, authorId: string): int =
+  try:
+    result = dbConn.insertID(
+      sql"INSERT INTO entries (body, author_id) VALUES (?, ?)",
+      body, authorId
+    ).int
+
+  except DbError:
+    discard
+
 template withDbConn*(varName, body: untyped): untyped =
   let
     host = getEnv("PG_HOST")
@@ -78,20 +88,3 @@ template withDbConn*(varName, body: untyped): untyped =
 when isMainModule:
   withDbConn dbConn:
     dbConn.initDb()
-
-  # const testEntries = [
-  #   ("Foo bar baz", "qwe123", "asd456"),
-  #   ("Qwe asd zxc", "wer234", "sdf567"),
-  #   ("После «dolor sit» идёт «amet»", "ert345", "dfg678"),
-  #   ("Новый урл цупа теперь такой: https://fcc.ege.restr.im", "rty456", "fgh789")
-  # ]
-
-  # for entry in testEntries:
-  #   discard dbConn.addEntry(entry[0], entry[1], entry[2])
-
-  # echo dbConn.findMatches("How do I foo?")
-  # echo dbConn.findMatches("Какой урл у цупа сейчас?")
-  # echo dbConn.findMatches("fcc")
-  # echo dbConn.findMatches("Напомните плз, что там после dolor sit.")
-
-  # dbConn.close()
