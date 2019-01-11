@@ -55,3 +55,17 @@ router api:
       resp %*{
         "id": dbConn.createEntry(text, userId)
       }
+
+  put "/entries/@id":
+    let
+      id = parseInt(@"id")
+      body = parseJson(request.body)
+      text = body["text"].getStr()
+
+    var success: bool
+
+    withDbConn dbConn:
+      success = dbConn.updateEntry(id , text)
+
+    if success: resp Http200
+    else: resp Http500

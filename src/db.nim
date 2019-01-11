@@ -51,10 +51,10 @@ proc findMatches*(dbConn: DbConn, query: string, limit = 3, tsConfig = "russian"
 proc getEntries*(dbConn: DbConn): seq[Row] = dbConn.getAllRows(sql"SELECT * FROM entries")
 
 proc getEntry*(dbConn: DbConn, id: int): Row =
-  result = dbConn.getRow(sql"SELECT * FROM entries WHERE id=?", $id)
+  result = dbConn.getRow(sql"SELECT * FROM entries WHERE id=?", id)
 
 proc deleteEntry*(dbConn: DbConn, id: int) =
-  dbConn.exec(sql"DELETE FROM entries WHERE id=?", $id)
+  dbConn.exec(sql"DELETE FROM entries WHERE id=?", id)
 
 proc createEntry*(dbConn: DbConn, body, authorId: string): int =
   try:
@@ -62,6 +62,14 @@ proc createEntry*(dbConn: DbConn, body, authorId: string): int =
       sql"INSERT INTO entries (body, author_id) VALUES (?, ?)",
       body, authorId
     ).int
+
+  except DbError:
+    discard
+
+proc updateEntry*(dbConn: DbConn, id: int, text: string): bool =
+  try:
+    dbConn.exec sql"UPDATE entries SET body = ? WHERE id = ?", text, id
+    result = true
 
   except DbError:
     discard
