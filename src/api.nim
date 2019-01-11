@@ -1,4 +1,4 @@
-import db_postgres, json
+import db_postgres, json, strutils
 
 import jester
 
@@ -6,17 +6,32 @@ import db
 
 
 router api:
-  get "/entries":
-    var matches = newJArray()
+  get "/entries/?@id?":
+    if @"id" == "":
+      var entries = newJArray()
 
-    withDbConn dbConn:
-      for match in dbConn.getEntries():
-        matches.add %*{
-          "id": match[0],
-          "body": match[1],
-          "authorId": match[2],
-          "createdAt": match[3],
-          "rating": match[4]
+      withDbConn dbConn:
+        for entry in dbConn.getEntries():
+          entries.add %*{
+            "id": entry[0],
+            "body": entry[1],
+            "authorId": entry[2],
+            "createdAt": entry[3],
+            "rating": entry[4]
+          }
+
+      resp entries
+
+    else:
+      let id = parseInt(@"id")
+
+      withDbConn dbConn:
+        let entry = dbConn.getEntry(id)
+
+        resp %*{
+          "id": entry[0],
+          "body": entry[1],
+          "authorId": entry[2],
+          "createdAt": entry[3],
+          "rating": entry[4]
         }
-
-    resp matches
