@@ -1,0 +1,28 @@
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: web
+  namespace: fyi
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: web
+    spec:
+      containers:
+        - name: fyi
+          image: "docker-registry.restr.im:5000/fyi/web:latest"
+          command: ["/usr/app/fyi"]
+          env:
+            - name: PG_HOST
+              value: "dumbo.db.elephantsql.com"
+            - name: PG_USER
+              value: "qkhohsnr"
+            - name: PG_PASSWORD
+              value: "XMjAvBp1Qhap6bw9IPZpZC5vNmoTcxUM"
+            - name: PG_DB
+              value: "qkhohsnr"
+
+          ports:
+            - containerPort: 5000
