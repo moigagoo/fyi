@@ -3,7 +3,7 @@ RUN mkdir -p /usr/app
 WORKDIR /usr/app
 COPY . /usr/app
 ENV LANG=ru
-RUN nimble build -d:release -d:lang=$LANG -y
+RUN nimble build -d:release -d:lang=$LANG -y -v `pwd`:/bin
 
 FROM postgres:alpine
 RUN mkdir -p /usr/app
