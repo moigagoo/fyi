@@ -25,5 +25,6 @@ $ ./fyi
 
 ```shell
 $ docker build -t fyi .
-$ docker run -it --rm -e PG_HOST=host -e PG_USER=user -e PG_PASSWORD=password -e PG_DB=db fyi
+$ docker run -it --rm -e PG_HOST=host -e PG_USER=user -e PG_PASSWORD=password -e PG_DB=db -p 5000:5000 -v `pwd`/frontend/build:/usr/app/public fyi
+$ docker run -it --rm -e PG_HOST=host -e PG_USER=user -e PG_PASSWORD=password -e PG_DB=db -p 5000:5000 -v ${PWD}/frontend/build:/usr/app/public fyi # pwsh
 ```
