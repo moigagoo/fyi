@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import axios from "axios";
 import "./App.css";
-import { Table, Input, Button, Popconfirm, Form } from "antd";
+import { Table, Input, Button, Popconfirm, Form, notification } from "antd";
 
 const FormItem = Form.Item;
 const EditableContext = React.createContext();
@@ -166,6 +166,18 @@ class App extends Component {
   handleDelete = id => {
     const dataSource = [...this.state.dataSource];
     this.setState({ dataSource: dataSource.filter(item => item.id !== id) });
+    axios
+      .delete(`/api/entries/${id}`)
+      .then(() => {
+        notification.success({
+          message: "УДОЛИЛ!"
+        });
+      })
+      .catch(() => {
+        notification.error({
+          message: "чот пошло не так!"
+        });
+      });
   };
 
   handleSave = row => {
