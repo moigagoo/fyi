@@ -1,7 +1,18 @@
 import React, { Component } from "react";
 import axios from "axios";
 import "./App.css";
-import { Table, Input, Button, Popconfirm, Form, notification } from "antd";
+import {
+  Table,
+  Input,
+  Button,
+  Popconfirm,
+  Form,
+  notification,
+  Drawer,
+  Icon,
+  Alert
+} from "antd";
+import ReactMarkdown from "react-markdown";
 
 const FormItem = Form.Item;
 const EditableContext = React.createContext();
@@ -12,6 +23,10 @@ const EditableRow = ({ form, index, ...props }) => (
     <tr {...props} />
   </EditableContext.Provider>
 );
+
+function hasErrors(fieldsError) {
+  return Object.keys(fieldsError).some(field => fieldsError[field]);
+}
 
 const EditableFormRow = Form.create()(EditableRow);
 
@@ -90,6 +105,7 @@ class EditableCell extends React.Component {
                     <TextArea
                       ref={node => (this.input = node)}
                       onPressEnter={this.save}
+                      autosize
                     />
                   )}
                 </FormItem>
@@ -99,7 +115,14 @@ class EditableCell extends React.Component {
                   style={{ paddingRight: 24 }}
                   onClick={this.toggleEdit}
                 >
-                  {restProps.children}
+                  <ReactMarkdown
+                    source={restProps.children[2]}
+                    renderers={{
+                      code: ({ value }) => {
+                        return <Alert message={value} type="info" />;
+                      }
+                    }}
+                  />
                 </pre>
               );
             }}
@@ -153,13 +176,19 @@ class App extends Component {
 
     this.state = {
       search: "",
-      dataSource: []
+      dataSource: [],
+      drawerVisible: false
     };
   }
 
   componentDidMount() {
+    this.getAllEntries();
+  }
+
+  getAllEntries() {
+    this.setState({ loading: true });
     axios.get("/api/entries").then(response => {
-      this.setState({ dataSource: response.data });
+      this.setState({ dataSource: response.data, loading: false });
     });
   }
 
@@ -182,21 +211,76 @@ class App extends Component {
 
   handleSave = row => {
     const newData = [...this.state.dataSource];
-    const index = newData.findIndex(item => row.key === item.key);
+    const index = newData.findIndex(item => row.id === item.id);
     const item = newData[index];
     newData.splice(index, 1, {
       ...item,
       ...row
     });
     this.setState({ dataSource: newData });
+    axios
+      .put(`/api/entries/${row.id}`, { text: row.body })
+      .then(() => {
+        notification.success({
+          message: "СОХРОНИЛ!"
+        });
+      })
+      .catch(() => {
+        notification.error({
+          message: "чот пошло не так!"
+        });
+      });
   };
 
   handleSearch = e => {
     this.setState({ search: e.target.value });
   };
 
+  showDrawer = () => {
+    this.setState({
+      drawerVisible: true
+    });
+  };
+
+  hideDrawer = () => {
+    this.setState({
+      drawerVisible: false
+    });
+  };
+
+  handleSubmit = e => {
+    e.preventDefault();
+    this.props.form.validateFields((err, values) => {
+      if (!err) {
+        this.hideDrawer();
+        axios
+          .post("/api/entries/", { text: values.text })
+          .then(() => {
+            notification.success({
+              message: "СОЗДОЛОСЬ!"
+            });
+            this.getAllEntries();
+          })
+          .catch(() => {
+            notification.error({
+              message: "чот пошло не так!"
+            });
+          });
+      }
+    });
+  };
+
   render() {
     const { dataSource, search } = this.state;
+    const {
+      getFieldDecorator,
+      getFieldsError,
+      getFieldError,
+      isFieldTouched
+    } = this.props.form;
+
+    const textError = getFieldError("text");
+
     const components = {
       body: {
         row: EditableFormRow,
@@ -223,6 +307,10 @@ class App extends Component {
       return ds.body.includes(search);
     });
 
+    const sortedDataSource = filteredDataSource.sort((a, b) => {
+      return new Date(b.createdAt) - new Date(a.createdAt);
+    });
+
     return (
       <div className="app">
         <div className="search">
@@ -238,12 +326,49 @@ class App extends Component {
           components={components}
           rowClassName={() => "editable-row"}
           bordered
-          dataSource={filteredDataSource}
+          dataSource={sortedDataSource}
           columns={columns}
+          loading={this.state.loading}
         />
+        <Button type="primary" onClick={this.showDrawer}>
+          КРИЭЙТ!
+        </Button>
+        <Drawer
+          width={640}
+          title="СОЗДАЙ"
+          placement="right"
+          closable={false}
+          onClose={this.hideDrawer}
+          visible={this.state.drawerVisible}
+        >
+          <Form onSubmit={this.handleSubmit}>
+            <Form.Item
+              validateStatus={textError ? "error" : ""}
+              help={textError || ""}
+            >
+              {getFieldDecorator("text", {
+                rules: [
+                  {
+                    required: true,
+                    message: "Ну ты введи йоп текст, че как не пацан?"
+                  }
+                ]
+              })(<TextArea placeholder="Текст-хуекст" autosize />)}
+            </Form.Item>
+            <Form.Item>
+              <Button
+                type="primary"
+                htmlType="submit"
+                disabled={hasErrors(getFieldsError())}
+              >
+                СОХРОНИ
+              </Button>
+            </Form.Item>
+          </Form>
+        </Drawer>
       </div>
     );
   }
 }
 
-export default App;
+export default Form.create({ name: "create_form" })(App);
